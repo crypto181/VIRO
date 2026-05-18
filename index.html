@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>VIRO Egg Sticker Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f0f0ec;min-height:100vh;padding:16px}
+
+.wrap{max-width:940px;margin:0 auto}
+.header{display:flex;align-items:center;gap:12px;border-bottom:2px solid #e5e7eb;padding-bottom:16px;margin-bottom:24px}
+.logo-box{background:#ef4444;border-radius:8px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden}
+.logo-box img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.header h1{font-family:'Syne',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:-0.03em}
+.header p{font-size:12px;color:#6b7280;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+
+/* Card */
+.card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:14px}
+.card-label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+
+/* Fields */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px}
+.field input[type=text],
+.field input[type=tel],
+.field input[type=email],
+.field input[type=date],
+.field input[type=number]{width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;transition:border-color .15s,box-shadow .15s;background:#fff}
+.field input:focus{outline:none;border-color:#6b7280;box-shadow:0 0 0 2px rgba(0,0,0,.08)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Logo upload */
+.logo-upload-area{border:2px dashed #e5e7eb;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.logo-upload-area:hover{border-color:#6b7280;background:#f9fafb}
+.logo-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.logo-preview{width:64px;height:64px;border-radius:8px;object-fit:cover;margin:0 auto 6px;display:block;border:1.5px solid #e5e7eb}
+.logo-placeholder{font-size:28px;margin-bottom:4px}
+.logo-upload-label{font-size:12px;font-weight:600;color:#6b7280}
+.logo-upload-sub{font-size:11px;color:#9ca3af;margin-top:2px}
+.logo-clear{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#ef4444;background:#fef2f2;border:none;border-radius:6px;padding:3px 10px;cursor:pointer}
+
+/* Expiry preview */
+.expiry-preview{background:#f9fafb;border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:2px}
+.expiry-preview span{font-size:12px;color:#6b7280;font-weight:600}
+.expiry-preview strong{font-size:16px;font-weight:800}
+
+/* Colors */
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s}
+.swatch:hover{transform:scale(1.12)}
+.swatch.active{border-color:#000;box-shadow:0 0 0 2px #fff inset;transform:scale(1.18)}
+
+/* Size buttons */
+.size-btns{display:flex;gap:8px;flex-wrap:wrap}
+.size-btn{padding:8px 14px;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.size-btn.active{background:#111;color:#fff;border-color:#111}
+
+/* Templates */
+.tpl-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:6px}
+.tpl-row span{font-size:13px;font-weight:600}
+.tpl-actions{display:flex;gap:6px}
+.tpl-load{font-size:11px;font-weight:700;color:#4f46e5;background:#ede9fe;border:none;border-radius:6px;padding:4px 9px;cursor:pointer}
+.tpl-del{font-size:11px;font-weight:700;color:#ef4444;background:#fef2f2;border:none;border-radius:6px;padding:4px 9px;cursor:pointer}
+.tpl-empty{font-size:13px;color:#9ca3af;text-align:center;padding:10px 0}
+.tpl-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 18px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;border:none;font-family:inherit;transition:all .18s;width:100%}
+.btn:active{transform:scale(.96)}
+.btn-green{background:#16a34a;color:#fff}
+.btn-green:hover{background:#15803d}
+.btn-blue{background:#4f46e5;color:#fff}
+.btn-blue:hover{background:#4338ca}
+.btn-gray{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;width:auto;padding:6px 12px;font-size:12px;border-radius:8px}
+.btn-gray:hover{background:#e5e7eb}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:400px}
+
+/* Spinner */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.badge{background:#f3f4f6;border-radius:8px;padding:5px 14px;font-size:12px;color:#6b7280;font-weight:600}
+.tip{font-size:11px;color:#9ca3af;text-align:center;max-width:320px;line-height:1.6}
+.preview-wrap{width:100%;overflow-x:auto;display:flex;justify-content:center;padding:14px 8px}
+.right-col{display:flex;flex-direction:column;align-items:center;gap:16px}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#111;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:600;z-index:9999;transition:transform .28s,opacity .28s;opacity:0;pointer-events:none;white-space:nowrap;font-family:'DM Sans',sans-serif}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Templates Modal */
+#tplModal{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end;justify-content:center}
+#tplModal.open{display:flex}
+#tplModalBackdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);animation:fadeIn .22s ease}
+#tplModalSheet{position:relative;z-index:1;background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:88vh;display:flex;flex-direction:column;animation:slideUp .28s ease;overflow:hidden}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+#tplModalHeader{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 14px;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+#tplModalHeader h2{font-family:'Syne',sans-serif;font-weight:900;font-size:17px;letter-spacing:-0.02em}
+#tplModalClose{background:#f3f4f6;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+#tplModalClose:hover{background:#e5e7eb}
+#tplModalBody{overflow-y:auto;padding:16px;flex:1}
+#tplModalEmpty{text-align:center;padding:32px 16px;color:#9ca3af;font-size:14px}
+
+/* Template card in modal */
+.tpl-card{border:1.5px solid #e5e7eb;border-radius:14px;margin-bottom:14px;overflow:hidden;transition:border-color .15s,box-shadow .15s;background:#fafafa}
+.tpl-card:hover{border-color:#6b7280;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.tpl-card-top{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;background:#fff}
+.tpl-card-name{font-weight:700;font-size:14px;color:#111}
+.tpl-card-meta{font-size:11px;color:#9ca3af;margin-top:2px}
+.tpl-card-actions{display:flex;gap:8px;align-items:center}
+.tpl-card-load{background:#111;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.tpl-card-load:hover{background:#374151}
+.tpl-card-del{background:#fef2f2;color:#ef4444;border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.tpl-card-del:hover{background:#fee2e2}
+.tpl-card-preview{padding:14px;display:flex;justify-content:center;background:#f9fafb;overflow-x:auto}
+
+/* Mini sticker in modal preview */
+.mini-sticker{background:#fff;border-radius:4px;flex-shrink:0;display:flex;flex-direction:column;position:relative;overflow:hidden;font-family:'DM Sans',sans-serif}
+
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff;padding:0}
+  .preview-wrap{padding:0}
+  #sticker{box-shadow:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header no-print">
+    <div class="logo-box" id="headerLogoBox">🥚</div>
+    <div>
+      <h1>VIRO Egg Sticker Pro</h1>
+      <p>Design · Preview · Print · Export</p>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Left: Controls -->
+    <div class="no-print" id="controls">
+
+      <!-- Logo Upload -->
+      <div class="card">
+        <div class="card-label">Company Logo</div>
+        <div class="logo-upload-area" id="logoUploadArea">
+          <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(event)">
+          <div id="logoPreviewWrap">
+            <div class="logo-placeholder">🖼️</div>
+            <div class="logo-upload-label">Tap to upload logo</div>
+            <div class="logo-upload-sub">PNG, JPG, SVG supported</div>
+          </div>
+        </div>
+        <div id="logoClearWrap" style="text-align:center;margin-top:6px;display:none">
+          <button class="logo-clear" onclick="clearLogo()">✕ Remove Logo</button>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="card">
+        <div class="card-label">Sticker Details</div>
+
+        <div class="field">
+          <label>Company Name</label>
+          <input type="text" id="companyName" value="VIRO GGG DISTRIBUTOR">
+        </div>
+
+        <div class="field">
+          <label>Phone / Contacts</label>
+          <input type="tel" id="contacts" value="+254 7XX XXX XXX">
+        </div>
+
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="email" value="info@viroggg.com" placeholder="info@yourcompany.com">
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label>Production Date</label>
+            <input type="date" id="productionDate">
+          </div>
+          <div class="field">
+            <label>Shelf Life (days)</label>
+            <input type="number" id="shelfLife" value="30" min="1" max="365">
+          </div>
+        </div>
+
+        <div class="expiry-preview">
+          <span>→ Expiry Date</span>
+          <strong id="expiryDisplay" style="color:#ef4444">—</strong>
+        </div>
+
+        <div class="field" style="margin-top:12px">
+          <label>Color Theme</label>
+          <div class="swatches" id="swatches"></div>
+        </div>
+      </div>
+
+      <!-- Size -->
+      <div class="card">
+        <div class="card-label">Sticker Size</div>
+        <div class="size-btns" id="sizeBtns"></div>
+      </div>
+
+      <!-- Templates -->
+      <div class="card">
+        <div class="tpl-header">
+          <div class="card-label" style="margin:0">Templates</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-gray" onclick="openTemplatesModal()" style="background:#ede9fe;color:#4f46e5;border-color:#c4b5fd">📂 Open</button>
+            <button class="btn btn-gray" onclick="saveTemplate()">💾 Save</button>
+          </div>
+        </div>
+        <div id="templateList"><div class="tpl-empty">No templates saved yet</div></div>
+      </div>
+
+    </div>
+
+    <!-- Right: Preview + Actions -->
+    <div class="right-col">
+      <div class="preview-wrap">
+        <div id="sticker"></div>
+      </div>
+      <div class="badge" id="sizeBadge">Small — 6cm × 4cm</div>
+      <div class="action-grid no-print">
+        <button class="btn btn-green" onclick="window.print()">🖨️ Print Page</button>
+        <button class="btn btn-blue" id="pdfBtn" onclick="exportPdf()">📄 Get PDF</button>
+      </div>
+      <p class="tip no-print">💡 <strong>Android tip:</strong> Tap <em>Print Page</em> → <em>Save as PDF</em> for best results.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Templates Modal -->
+<div id="tplModal">
+  <div id="tplModalBackdrop" onclick="closeTemplatesModal()"></div>
+  <div id="tplModalSheet">
+    <div id="tplModalHeader">
+      <div>
+        <h2>📂 Saved Templates</h2>
+        <p style="font-size:11px;color:#9ca3af;margin-top:2px" id="tplModalCount">0 templates</p>
+      </div>
+      <button id="tplModalClose" onclick="closeTemplatesModal()">✕</button>
+    </div>
+    <div id="tplModalBody">
+      <div id="tplModalEmpty" style="display:none">
+        <div style="font-size:40px;margin-bottom:12px">📭</div>
+        <p style="font-weight:700;color:#374151;margin-bottom:4px">No templates yet</p>
+        <p style="font-size:12px">Save your current sticker design using the 💾 Save button</p>
+      </div>
+      <div id="tplModalList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────
+const COLORS = ['#ef4444','#22c55e','#3b82f6','#f59e0b','#8b5cf6','#141414'];
+const SIZES  = [
+  { id:'small',  label:'Small',  sub:'60×40mm',   w:6,  h:4  },
+  { id:'medium', label:'Medium', sub:'100×60mm',  w:10, h:6  },
+  { id:'large',  label:'Large',  sub:'150×100mm', w:15, h:10 },
+];
+
+// Chicken SVG (inline so no CORS issues with html2canvas)
+const CHICKEN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Body -->
+  <ellipse cx="50" cy="62" rx="28" ry="22" fill="#f5e6c8" stroke="#c8a96e" stroke-width="1.5"/>
+  <!-- Wing -->
+  <ellipse cx="38" cy="65" rx="14" ry="9" fill="#e8d5a3" stroke="#c8a96e" stroke-width="1"/>
+  <!-- Neck -->
+  <ellipse cx="50" cy="42" rx="9" ry="10" fill="#f5e6c8" stroke="#c8a96e" stroke-width="1.5"/>
+  <!-- Head -->
+  <circle cx="50" cy="28" r="13" fill="#f5e6c8" stroke="#c8a96e" stroke-width="1.5"/>
+  <!-- Comb -->
+  <path d="M46 16 Q48 10 50 15 Q52 8 54 15 Q56 11 57 16" fill="#ef4444" stroke="#c0392b" stroke-width="0.8"/>
+  <!-- Wattle -->
+  <ellipse cx="52" cy="34" rx="3.5" ry="4" fill="#ef4444"/>
+  <!-- Eye -->
+  <circle cx="54" cy="25" r="3" fill="#fff"/>
+  <circle cx="55" cy="25" r="1.5" fill="#222"/>
+  <!-- Beak -->
+  <path d="M58 29 L65 31 L58 33 Z" fill="#f59e0b"/>
+  <!-- Tail -->
+  <path d="M78 55 Q90 40 85 58 Q92 48 83 62 Q88 55 78 65" fill="#e8d5a3" stroke="#c8a96e" stroke-width="1"/>
+  <!-- Legs -->
+  <line x1="44" y1="82" x2="42" y2="95" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="56" y1="82" x2="58" y2="95" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Feet -->
+  <path d="M38 95 L42 95 L44 91" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M62 95 L58 95 L56 91" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>`;
+
+// ── State ──────────────────────────────────────────────────────────────
+let state = {
+  companyName:    'VIRO GGG DISTRIBUTOR',
+  contacts:       '+254 7XX XXX XXX',
+  email:          'info@viroggg.com',
+  productionDate: today(),
+  shelfLifeDays:  30,
+  colorTheme:     '#ef4444',
+  sizeId:         'small',
+  logoDataUrl:    '',
+};
+
+try {
+  const saved = JSON.parse(localStorage.getItem('viro_last') || '{}');
+  state = { ...state, ...saved };
+} catch(e) {}
+
+let templates = [];
+try { templates = JSON.parse(localStorage.getItem('viro_v1') || '[]'); } catch(e) {}
+
+// ── Utils ──────────────────────────────────────────────────────────────
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+function addDays(dateStr, days) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
+  d.setDate(d.getDate() + (parseInt(days) || 0));
+  return d.toISOString().split('T')[0];
+}
+function toast(msg, ms) {
+  ms = ms || 3000;
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), ms);
+}
+function persist() {
+  try { localStorage.setItem('viro_last', JSON.stringify(state)); } catch(e) {}
+}
+function currentSize() {
+  return SIZES.find(s => s.id === state.sizeId) || SIZES[0];
+}
+function escHtml(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Logo Upload ────────────────────────────────────────────────────────
+function handleLogoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    state.logoDataUrl = ev.target.result;
+    persist();
+    updateLogoUI();
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearLogo() {
+  state.logoDataUrl = '';
+  document.getElementById('logoInput').value = '';
+  persist();
+  updateLogoUI();
+  render();
+}
+
+function updateLogoUI() {
+  const hasLogo = !!state.logoDataUrl;
+  const previewWrap = document.getElementById('logoPreviewWrap');
+  const clearWrap   = document.getElementById('logoClearWrap');
+  const headerBox   = document.getElementById('headerLogoBox');
+
+  if (hasLogo) {
+    previewWrap.innerHTML = `<img src="${state.logoDataUrl}" class="logo-preview" alt="Logo">
+      <div class="logo-upload-label" style="color:#16a34a">✓ Logo uploaded</div>
+      <div class="logo-upload-sub">Tap to change</div>`;
+    clearWrap.style.display = 'block';
+    headerBox.innerHTML = `<img src="${state.logoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" alt="Logo">`;
+  } else {
+    previewWrap.innerHTML = `<div class="logo-placeholder">🖼️</div>
+      <div class="logo-upload-label">Tap to upload logo</div>
+      <div class="logo-upload-sub">PNG, JPG, SVG supported</div>`;
+    clearWrap.style.display = 'none';
+    headerBox.innerHTML = '🥚';
+  }
+}
+
+// ── Build Sticker ──────────────────────────────────────────────────────
+function buildSticker(st, size) {
+  const W  = size.w * 37.795;
+  const H  = size.h * 37.795;
+  const u  = H / 100;
+  const fs = n => Math.max(7, u * n) + 'px';
+  const exp = addDays(st.productionDate, st.shelfLifeDays);
+  const c   = st.colorTheme;
+
+  // Logo/icon section for header
+  const logoHtml = st.logoDataUrl
+    ? `<img src="${st.logoDataUrl}" style="width:${u*14}px;height:${u*14}px;object-fit:cover;border-radius:50%;border:1.5px solid ${c};flex-shrink:0" alt="Logo">`
+    : `<div style="background:#fff;border:1.5px solid ${c};border-radius:50%;padding:${u*1.2}px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:${u*11}px;line-height:1">🥚</div>`;
+
+  // Chicken SVG encoded for img src
+  const chickenB64 = 'data:image/svg+xml;base64,' + btoa(CHICKEN_SVG);
+
+  // Chicken size relative to sticker
+  const chickenSize = Math.min(W * 0.28, H * 0.42);
+
+  return `
+  <div id="sticker" style="
+    width:${W}px;height:${H}px;flex-shrink:0;
+    border:2.5px solid ${c};background:#fff;border-radius:4px;
+    display:flex;flex-direction:column;
+    padding:${u*2}px ${u*2.5}px;
+    position:relative;overflow:hidden;
+    box-shadow:0 6px 28px rgba(0,0,0,.13);
+    font-family:'DM Sans',sans-serif;
+  ">
+    <!-- BG watermark egg -->
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:${u*50}px;opacity:.04;pointer-events:none;user-select:none">🥚</div>
+
+    <!-- Chicken illustration (bottom-right) -->
+    <img src="${chickenB64}" style="
+      position:absolute;bottom:${u*5}px;right:${u*2}px;
+      width:${chickenSize}px;height:${chickenSize}px;
+      opacity:0.18;pointer-events:none;user-select:none;
+    " alt="">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid ${c};padding-bottom:${u*2}px;position:relative;z-index:1">
+      <span style="font-family:'Syne',sans-serif;font-weight:900;font-size:${fs(12)};color:${c};text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80%">${escHtml(st.companyName)}</span>
+      ${logoHtml}
+    </div>
+
+    <!-- Body -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;position:relative;z-index:1;gap:${u*1.5}px;padding-right:${chickenSize * 0.5}px">
+      <p style="font-weight:800;font-size:${fs(9)};letter-spacing:-0.01em;color:#111">📞 ${escHtml(st.contacts)}</p>
+      ${st.email ? `<p style="font-size:${fs(7.5)};font-weight:600;color:#6b7280">✉ ${escHtml(st.email)}</p>` : ''}
+      <div style="background:${c}1a;border-radius:4px;padding:${u*1.2}px ${u*3}px;margin-top:${u}px">
+        <p style="font-family:'Syne',sans-serif;font-weight:800;font-style:italic;font-size:${fs(11)};color:${c};text-transform:uppercase">Fresh Farm Eggs 🥚</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:2px solid ${c};padding-top:${u*2}px;gap:4px;position:relative;z-index:1">
+      <div style="text-align:center">
+        <p style="font-size:${fs(4.5)};font-weight:700;color:#9ca3af;text-transform:uppercase">Production</p>
+        <p style="font-size:${fs(8)};font-weight:800">${escHtml(st.productionDate)}</p>
+      </div>
+      <div style="background:${c};border-radius:4px;text-align:center;padding:${u}px ${u*2}px;color:#fff">
+        <p style="font-size:${fs(4.5)};font-weight:700;text-transform:uppercase;opacity:.85">Expiry</p>
+        <p style="font-size:${fs(9)};font-weight:800">${exp}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────
+function render() {
+  const size = currentSize();
+
+  // Sticker
+  document.querySelector('.preview-wrap').innerHTML = buildSticker(state, size);
+
+  // Expiry display
+  const exp = addDays(state.productionDate, state.shelfLifeDays);
+  const expEl = document.getElementById('expiryDisplay');
+  if (expEl) { expEl.textContent = exp; expEl.style.color = state.colorTheme; }
+
+  // Badge
+  const badge = document.getElementById('sizeBadge');
+  if (badge) badge.textContent = `${size.label} — ${size.w}cm × ${size.h}cm`;
+
+  // Swatches
+  const sw = document.getElementById('swatches');
+  if (sw) sw.innerHTML = COLORS.map(c => `
+    <div class="swatch${state.colorTheme===c?' active':''}" style="background:${c}" onclick="setColor('${c}')"></div>
+  `).join('');
+
+  // Size buttons
+  const sb = document.getElementById('sizeBtns');
+  if (sb) sb.innerHTML = SIZES.map(s => `
+    <button class="size-btn${state.sizeId===s.id?' active':''}" onclick="setSize('${s.id}')">
+      ${s.label} <span style="opacity:.6;font-weight:500">${s.sub}</span>
+    </button>
+  `).join('');
+
+  renderTemplates();
+}
+
+function renderTemplates() {
+  const el = document.getElementById('templateList');
+  if (!el) return;
+  if (templates.length === 0) {
+    el.innerHTML = '<div class="tpl-empty">No templates saved yet</div>';
+    return;
+  }
+  el.innerHTML = templates.map(t => `
+    <div class="tpl-row">
+      <span>${escHtml(t.name)}</span>
+      <div class="tpl-actions">
+        <button class="tpl-load" onclick="loadTemplate(${t.id})">Load</button>
+        <button class="tpl-del"  onclick="delTemplate(${t.id})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Input Bindings ─────────────────────────────────────────────────────
+function bindInputs() {
+  document.getElementById('companyName').value    = state.companyName;
+  document.getElementById('contacts').value        = state.contacts;
+  document.getElementById('email').value           = state.email || '';
+  document.getElementById('productionDate').value  = state.productionDate;
+  document.getElementById('shelfLife').value       = state.shelfLifeDays;
+
+  document.getElementById('companyName').addEventListener('input', function() {
+    state.companyName = this.value; persist(); render();
+  });
+  document.getElementById('contacts').addEventListener('input', function() {
+    state.contacts = this.value; persist(); render();
+  });
+  document.getElementById('email').addEventListener('input', function() {
+    state.email = this.value; persist(); render();
+  });
+  document.getElementById('productionDate').addEventListener('change', function() {
+    state.productionDate = this.value; persist(); render();
+  });
+  document.getElementById('shelfLife').addEventListener('input', function() {
+    const v = parseInt(this.value);
+    state.shelfLifeDays = isNaN(v) ? 1 : Math.max(1, Math.min(365, v));
+    persist(); render();
+  });
+}
+
+// ── Actions ────────────────────────────────────────────────────────────
+function setColor(c) { state.colorTheme = c; persist(); render(); }
+function setSize(id)  { state.sizeId = id;   persist(); render(); }
+
+function saveTemplate() {
+  const name = window.prompt('Template name:');
+  if (!name || !name.trim()) return;
+  // Don't store logo dataUrl in template to keep storage small
+  const { logoDataUrl, ...stateWithoutLogo } = state;
+  templates.push({ id: Date.now(), name: name.trim(), state: { ...stateWithoutLogo } });
+  try { localStorage.setItem('viro_v1', JSON.stringify(templates)); } catch(e) {}
+  renderTemplates();
+  toast('✅ Template saved!');
+}
+
+function loadTemplate(id) {
+  const t = templates.find(x => x.id === id);
+  if (!t) return;
+  state = { ...state, ...t.state };
+  document.getElementById('companyName').value   = state.companyName;
+  document.getElementById('contacts').value       = state.contacts;
+  document.getElementById('email').value          = state.email || '';
+  document.getElementById('productionDate').value = state.productionDate;
+  document.getElementById('shelfLife').value      = state.shelfLifeDays;
+  persist(); render();
+  toast('📂 Template loaded!');
+}
+
+function delTemplate(id) {
+  templates = templates.filter(t => t.id !== id);
+  try { localStorage.setItem('viro_v1', JSON.stringify(templates)); } catch(e) {}
+  renderTemplates();
+}
+
+// ── PDF Export ─────────────────────────────────────────────────────────
+async function exportPdf() {
+  const stickerEl = document.getElementById('sticker');
+  if (!stickerEl) { toast('❌ No sticker to export'); return; }
+
+  const btn = document.getElementById('pdfBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Building...';
+
+  try {
+    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    const scale = isMobile ? 2 : 4;
+
+    const canvas = await html2canvas(stickerEl, {
+      scale,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      imageTimeout: 8000,
+      removeContainer: true,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+    const size = currentSize();
+    const sw = size.w * 10;
+    const sh = size.h * 10;
+    const margin = 8, gap = 5, pageW = 210, pageH = 297;
+    const cols  = Math.max(1, Math.floor((pageW - margin*2 + gap) / (sw + gap)));
+    const rows  = Math.max(1, Math.floor((pageH - margin*2 + gap) / (sh + gap)));
+    const total = cols * rows;
+    const startX = (pageW - (cols*sw + (cols-1)*gap)) / 2;
+
+    for (let i = 0; i < total; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      pdf.addImage(imgData, 'JPEG', startX + col*(sw+gap), margin + row*(sh+gap), sw, sh);
+    }
+
+    const blob = pdf.output('blob');
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'VIRO_Stickers.pdf';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 8000);
+
+    toast('✅ ' + total + ' stickers exported!');
+  } catch(err) {
+    console.error(err);
+    toast('❌ Export failed — use Print instead');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📄 Get PDF';
+}
+
+// ── Templates Modal ────────────────────────────────────────────────────
+function openTemplatesModal() {
+  renderModalTemplates();
+  document.getElementById('tplModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTemplatesModal() {
+  document.getElementById('tplModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeTemplatesModal();
+});
+
+function buildMiniSticker(st, W, H) {
+  const u  = H / 100;
+  const fs = n => Math.max(5, u * n) + 'px';
+  const exp = addDays(st.productionDate, st.shelfLifeDays);
+  const c   = st.colorTheme || '#ef4444';
+
+  const logoHtml = st.logoDataUrl
+    ? `<img src="${st.logoDataUrl}" style="width:${u*13}px;height:${u*13}px;object-fit:cover;border-radius:50%;border:1.5px solid ${c};flex-shrink:0" alt="">`
+    : `<div style="background:#fff;border:1.5px solid ${c};border-radius:50%;width:${u*13}px;height:${u*13}px;display:flex;align-items:center;justify-content:center;font-size:${u*9}px;flex-shrink:0">🥚</div>`;
+
+  const chickenB64 = 'data:image/svg+xml;base64,' + btoa(CHICKEN_SVG);
+  const chickenSize = Math.min(W * 0.26, H * 0.4);
+
+  return `
+  <div class="mini-sticker" style="width:${W}px;height:${H}px;border:2px solid ${c};padding:${u*2}px ${u*2}px;box-shadow:0 3px 14px rgba(0,0,0,.1)">
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:${u*45}px;opacity:.04;pointer-events:none">🥚</div>
+    <img src="${chickenB64}" style="position:absolute;bottom:${u*4}px;right:${u*2}px;width:${chickenSize}px;height:${chickenSize}px;opacity:.15;pointer-events:none" alt="">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid ${c};padding-bottom:${u*1.5}px;position:relative;z-index:1">
+      <span style="font-family:'Syne',sans-serif;font-weight:900;font-size:${fs(11)};color:${c};text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:78%">${escHtml(st.companyName)}</span>
+      ${logoHtml}
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;position:relative;z-index:1;gap:${u*1.2}px;padding:${u*1.5}px 0;padding-right:${chickenSize*0.45}px">
+      <p style="font-weight:800;font-size:${fs(8.5)};color:#111;margin:0">📞 ${escHtml(st.contacts)}</p>
+      ${st.email ? `<p style="font-size:${fs(7)};font-weight:600;color:#6b7280;margin:0">✉ ${escHtml(st.email)}</p>` : ''}
+      <div style="background:${c}1a;border-radius:3px;padding:${u}px ${u*2.5}px;margin-top:${u*0.5}px">
+        <p style="font-family:'Syne',sans-serif;font-weight:800;font-style:italic;font-size:${fs(10)};color:${c};text-transform:uppercase;margin:0">Fresh Farm Eggs 🥚</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1.5px solid ${c};padding-top:${u*1.5}px;gap:3px;position:relative;z-index:1">
+      <div style="text-align:center">
+        <p style="font-size:${fs(4)};font-weight:700;color:#9ca3af;text-transform:uppercase;margin:0">Production</p>
+        <p style="font-size:${fs(7.5)};font-weight:800;margin:0">${escHtml(st.productionDate||'')}</p>
+      </div>
+      <div style="background:${c};border-radius:3px;text-align:center;padding:${u*0.8}px ${u*1.5}px;color:#fff">
+        <p style="font-size:${fs(4)};font-weight:700;text-transform:uppercase;margin:0;opacity:.85">Expiry</p>
+        <p style="font-size:${fs(8)};font-weight:800;margin:0">${exp}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalTemplates() {
+  const list    = document.getElementById('tplModalList');
+  const empty   = document.getElementById('tplModalEmpty');
+  const count   = document.getElementById('tplModalCount');
+
+  count.textContent = templates.length + ' template' + (templates.length !== 1 ? 's' : '');
+
+  if (templates.length === 0) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // Mini preview size — fixed comfortable size inside modal
+  const MINI_W = 240;
+  const MINI_H = 160;
+
+  list.innerHTML = templates.map(t => {
+    const st = t.state || {};
+    const c  = st.colorTheme || '#ef4444';
+    const created = t.id ? new Date(t.id).toLocaleDateString('en-KE', { day:'numeric', month:'short', year:'numeric' }) : '';
+    return `
+    <div class="tpl-card">
+      <div class="tpl-card-top">
+        <div>
+          <div class="tpl-card-name">${escHtml(t.name)}</div>
+          <div class="tpl-card-meta">Saved ${created} · <span style="color:${c};font-weight:700">${escHtml(st.sizeId || 'small')}</span></div>
+        </div>
+        <div class="tpl-card-actions">
+          <button class="tpl-card-del" onclick="delTemplateModal(${t.id})">🗑 Delete</button>
+          <button class="tpl-card-load" onclick="loadTemplateModal(${t.id})">Load →</button>
+        </div>
+      </div>
+      <div class="tpl-card-preview">
+        ${buildMiniSticker(st, MINI_W, MINI_H)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadTemplateModal(id) {
+  loadTemplate(id);
+  closeTemplatesModal();
+}
+
+function delTemplateModal(id) {
+  delTemplate(id);
+  renderModalTemplates();
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  bindInputs();
+  updateLogoUI();
+  render();
+});
+</script>
+</body>
+</html>
